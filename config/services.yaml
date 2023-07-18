@@ -20,5 +20,23 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\State\User\Processor\UserPasswordHasher:
+        bind:
+            $processor: '@api_platform.doctrine.orm.state.persist_processor'
+
+    App\State\User\Provider\UserItemStateProvider:
+        bind:
+            $itemProvider: '@api_platform.doctrine.orm.state.item_provider'
+
+    App\State\Country\Processor\CountryItemStateProcessor:
+        bind:
+            $processor: '@api_platform.doctrine.orm.state.persist_processor'
+
+
+
+
+
