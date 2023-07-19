@@ -30,6 +30,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             normalizationContext: ['groups' => 'readCountry'],
             denormalizationContext: ['groups' => 'writeCountry'],
             security: "is_granted('ROLE_USER')",
+            deserialize: false,
             processor: CountryItemStateProcessor::class
         ),
         new Put(
