@@ -35,7 +35,7 @@ class JWTSuccessHandler implements AuthenticationSuccessHandlerInterface
             ]);
         }
 
-        return new Response(json_encode(['token' => $this->jwtManager->create($user)]), Response::HTTP_UNAUTHORIZED, [
+        return new Response(json_encode(['token' => $this->jwtManager->create($user)]), 200, [
             'Content-Type' => 'application/json',
         ]);
     }
