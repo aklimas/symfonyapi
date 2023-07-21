@@ -9,10 +9,12 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\UserRepository;
+use App\State\CountriesCollectionExcelStateProvider;
 use App\State\User\Processor\UserDeleteStateProcessor;
 use App\State\User\Processor\UserPasswordHasher;
 use App\State\User\Provider\UserCollectionStateProvider;
 use App\State\User\Provider\UserItemStateProvider;
+use App\State\User\Provider\UserPdfStateProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -25,6 +27,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
+        new Get(
+            uriTemplate: '/user/{id}/pdf',
+            //security: "is_granted('ROLE_USER')",
+            formats: ["pdf" => ["mimeType" => "application/pdf"]],
+            //read: false,
+            //"formats"={"csv"={"text/csv"}},
+            //controller: YourExportController::class,
+            provider: UserPdfStateProvider::class,
+        ),
         new GetCollection(
             normalizationContext: ['groups' => 'readUser'],
             security: "is_granted('ROLE_USER')",
@@ -96,7 +107,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 30)]
-    #[Groups(['readUser', 'createUser', 'updateUser'])]
+    #[Groups(['readUser', 'createUser', 'updateUser','readCountry'])]
     #[Assert\NotBlank(
         message: 'Required field',
     )]
@@ -109,7 +120,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $firstName = null;
 
     #[ORM\Column(length: 30)]
-    #[Groups(['readUser', 'createUser', 'updateUser'])]
+    #[Groups(['readUser', 'createUser', 'updateUser','readCountry'])]
     #[Assert\NotBlank(
         message: 'Required field',
     )]

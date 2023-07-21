@@ -13,7 +13,7 @@
         "doctrine/orm": "^2.15",
         "firebase/php-jwt": "^6.8",
         "lexik/jwt-authentication-bundle": "^2.18",
-        "mpdf/mpdf": "*",
+        "mpdf/mpdf": "^8.0",
         "nelmio/api-doc-bundle": "^4.12",
         "nelmio/cors-bundle": "^2.3",
         "phpdocumentor/reflection-docblock": "^5.3",

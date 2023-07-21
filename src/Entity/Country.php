@@ -21,7 +21,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ApiResource(
+#[
+ApiResource(
     operations: [
         new GetCollection(
             uriTemplate: '/countries/excel',
@@ -33,6 +34,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             provider: CountriesCollectionExcelStateProvider::class,
         ),
         new GetCollection(
+            normalizationContext: ['groups' => 'readCountry'],
             security: "is_granted('ROLE_USER')",
             provider: CountryCollectionStateProvider::class,
         ),
@@ -65,6 +67,19 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: "is_granted('ROLE_USER')",
             processor: Visit::class,
         ),
+        new Put(
+            uriTemplate: '/country/{id}/file',
+            formats: ["jpg" => ["mimeType" => "application/jpg"]],
+            openapi: new Model\Operation(
+                summary: 'Send Flag',
+                description: "Accepting the entry provided by the user",
+                requestBody:[
+
+                ]
+            ),
+            security: "is_granted('ROLE_ADMIN')",
+            processor: Accept::class,
+        ),
         new Delete(
             security: "is_granted('ROLE_USER')",
         ),
@@ -74,6 +89,26 @@ use Symfony\Component\Validator\Constraints as Assert;
     denormalizationContext: ['groups' => ''],
 
 )]
+
+/*
+ * "openapi_context"={
+ *                 "requestBody"={
+ *                     "content"={
+ *                         "multipart/form-data"={
+ *                             "schema"={
+ *                                 "type"="object",
+ *                                 "properties"={
+ *                                     "file"={
+ *                                         "type"="string",
+ *                                         "format"="binary"
+ *                                     }
+ *                                 }
+ *                             }
+ *                         }
+ *                     }
+ *                 }
+ *             }},
+ */
 #[ORM\Entity(repositoryClass: CountryRepository::class)]
 class Country
 {
@@ -90,7 +125,7 @@ class Country
     #[ORM\Column(length: 20, nullable: true)]
     public ?string $flag = null;
 
-    #[Groups(['visitCountry'])]
+    #[Groups(['visitCountry', 'readCountry'])]
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'country')]
     private Collection $users;
 

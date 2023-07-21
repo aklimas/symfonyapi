@@ -1,4 +1,6 @@
 api_platform:
+  defaults:
+    pagination_enabled: false
   swagger:
     api_keys:
       JWT:

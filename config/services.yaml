@@ -28,9 +28,7 @@ services:
         bind:
             $processor: '@api_platform.doctrine.orm.state.persist_processor'
 
-    App\State\User\Provider\UserItemStateProvider:
-        bind:
-            $itemProvider: '@api_platform.doctrine.orm.state.item_provider'
+
 
     App\State\Country\Processor\CountryItemStateProcessor:
         bind:
@@ -40,6 +38,13 @@ services:
         bind:
             $processor: '@api_platform.doctrine.orm.state.persist_processor'
 
+    App\State\User\Provider\UserItemStateProvider:
+        bind:
+            $itemProvider: '@api_platform.doctrine.orm.state.item_provider'
+
+    App\State\User\Provider\UserPdfStateProvider:
+        bind:
+            $itemProvider: '@api_platform.doctrine.orm.state.item_provider'
 
 
 
