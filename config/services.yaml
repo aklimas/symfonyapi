@@ -36,6 +36,11 @@ services:
         bind:
             $processor: '@api_platform.doctrine.orm.state.persist_processor'
 
+    App\State\Country\Processor\Visit:
+        bind:
+            $processor: '@api_platform.doctrine.orm.state.persist_processor'
+
+
 
 
 

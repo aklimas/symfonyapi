@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use App\Repository\CountryRepository;
+use App\State\CountriesCollectionExcelStateProvider;
 use App\State\Country\Processor\Accept;
 use App\State\Country\Processor\CountryItemStateProcessor;
 use App\State\Country\Processor\Visit;
@@ -23,6 +24,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(
+            uriTemplate: '/countries/excel',
+            //security: "is_granted('ROLE_USER')",
+            formats: ["xlsx" => ["mimeType" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]],
+            //read: false,
+            //"formats"={"csv"={"text/csv"}},
+            //controller: YourExportController::class,
+            provider: CountriesCollectionExcelStateProvider::class,
+        ),
+        new GetCollection(
             security: "is_granted('ROLE_USER')",
             provider: CountryCollectionStateProvider::class,
         ),
@@ -30,13 +40,12 @@ use Symfony\Component\Validator\Constraints as Assert;
             normalizationContext: ['groups' => 'readCountry'],
             denormalizationContext: ['groups' => 'writeCountry'],
             security: "is_granted('ROLE_USER')",
-            deserialize: false,
             processor: CountryItemStateProcessor::class
         ),
         new Put(
             normalizationContext: ['groups' => ''],
             denormalizationContext: ['groups' => 'writeCountry'],
-            security: "is_granted('ROLE_USER')",
+            security: "is_granted('ROLE_ADMIN')",
         ),
         new Put(
             uriTemplate: '/country/{id}/accept',
@@ -47,7 +56,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: "is_granted('ROLE_ADMIN')",
             processor: Accept::class
         ),
-        new Get(
+        new Put(
             uriTemplate: '/country/{id}/visit',
             openapi: new Model\Operation(
                 summary: 'Visiting the country',
@@ -110,7 +119,6 @@ class Country
     {
         return $this->id;
     }
-
 
 
     public function setName(string $name): static

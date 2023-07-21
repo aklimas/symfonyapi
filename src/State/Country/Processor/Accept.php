@@ -9,9 +9,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class Accept implements ProcessorInterface
 {
 
+    public function __construct(private readonly ProcessorInterface $processor)
+    {
+    }
+
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): JsonResponse
     {
         $data->setVerified(true);
-        return new JsonResponse("Country ({$data->getName()}) has been accepted");
+        return $this->processor->process($data, $operation, $uriVariables, $context);
     }
 }
