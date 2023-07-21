@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use App\Repository\CountryRepository;
+use App\State\CountriesCollectionExcelStateProvider;
 use App\State\Country\Processor\Accept;
 use App\State\Country\Processor\CountryItemStateProcessor;
 use App\State\Country\Processor\Visit;
@@ -20,9 +21,20 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ApiResource(
+#[
+ApiResource(
     operations: [
         new GetCollection(
+            uriTemplate: '/countries/excel',
+            //security: "is_granted('ROLE_USER')",
+            formats: ["xlsx" => ["mimeType" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]],
+            //read: false,
+            //"formats"={"csv"={"text/csv"}},
+            //controller: YourExportController::class,
+            provider: CountriesCollectionExcelStateProvider::class,
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => 'readCountry'],
             security: "is_granted('ROLE_USER')",
             provider: CountryCollectionStateProvider::class,
         ),
@@ -30,13 +42,12 @@ use Symfony\Component\Validator\Constraints as Assert;
             normalizationContext: ['groups' => 'readCountry'],
             denormalizationContext: ['groups' => 'writeCountry'],
             security: "is_granted('ROLE_USER')",
-            deserialize: false,
             processor: CountryItemStateProcessor::class
         ),
         new Put(
             normalizationContext: ['groups' => ''],
             denormalizationContext: ['groups' => 'writeCountry'],
-            security: "is_granted('ROLE_USER')",
+            security: "is_granted('ROLE_ADMIN')",
         ),
         new Put(
             uriTemplate: '/country/{id}/accept',
@@ -47,7 +58,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: "is_granted('ROLE_ADMIN')",
             processor: Accept::class
         ),
-        new Get(
+        new Put(
             uriTemplate: '/country/{id}/visit',
             openapi: new Model\Operation(
                 summary: 'Visiting the country',
@@ -55,6 +66,19 @@ use Symfony\Component\Validator\Constraints as Assert;
             ),
             security: "is_granted('ROLE_USER')",
             processor: Visit::class,
+        ),
+        new Put(
+            uriTemplate: '/country/{id}/file',
+            formats: ["jpg" => ["mimeType" => "application/jpg"]],
+            openapi: new Model\Operation(
+                summary: 'Send Flag',
+                description: "Accepting the entry provided by the user",
+                requestBody:[
+
+                ]
+            ),
+            security: "is_granted('ROLE_ADMIN')",
+            processor: Accept::class,
         ),
         new Delete(
             security: "is_granted('ROLE_USER')",
@@ -65,6 +89,26 @@ use Symfony\Component\Validator\Constraints as Assert;
     denormalizationContext: ['groups' => ''],
 
 )]
+
+/*
+ * "openapi_context"={
+ *                 "requestBody"={
+ *                     "content"={
+ *                         "multipart/form-data"={
+ *                             "schema"={
+ *                                 "type"="object",
+ *                                 "properties"={
+ *                                     "file"={
+ *                                         "type"="string",
+ *                                         "format"="binary"
+ *                                     }
+ *                                 }
+ *                             }
+ *                         }
+ *                     }
+ *                 }
+ *             }},
+ */
 #[ORM\Entity(repositoryClass: CountryRepository::class)]
 class Country
 {
@@ -81,7 +125,7 @@ class Country
     #[ORM\Column(length: 20, nullable: true)]
     public ?string $flag = null;
 
-    #[Groups(['visitCountry'])]
+    #[Groups(['visitCountry', 'readCountry'])]
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'country')]
     private Collection $users;
 
@@ -110,7 +154,6 @@ class Country
     {
         return $this->id;
     }
-
 
 
     public function setName(string $name): static
