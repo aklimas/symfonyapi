@@ -1,13 +1,11 @@
 api_platform:
   defaults:
     pagination_enabled: false
+  title: 'API - Country Visitor'
+  description: 'API for learning - Country Visitor'
+  version: '1.0.0'
   swagger:
     api_keys:
       JWT:
         name: Authorization
         type: header
-  formats:
-    json: ['application/json']
-    jsonld: ['application/ld+json']
-    html: ['text/html']
-  #  multipart: ['multipart/form-data']

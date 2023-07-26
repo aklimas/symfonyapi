@@ -14,8 +14,8 @@ use Symfony\Component\Mime\Email;
 
 final class RegisterMailSubscriber implements EventSubscriberInterface
 {
-    final const EMAIL_SENDER = 'dev@programigo.com';
-    final const HOST = '127.0.0.1:8000';
+    final public const EMAIL_SENDER = 'dev@programigo.com';
+    final public const HOST = '127.0.0.1:8000';
 
     private MailerInterface $mailer;
 
@@ -31,7 +31,7 @@ final class RegisterMailSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function sendMail(ViewEvent $event)
+    public function sendMail(ViewEvent $event): void
     {
         $user = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
@@ -40,7 +40,7 @@ final class RegisterMailSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($method == Request::METHOD_POST) {
+        if (Request::METHOD_POST == $method) {
             $this->sendConfirmationEmail($user);
         }
     }
@@ -51,7 +51,7 @@ final class RegisterMailSubscriber implements EventSubscriberInterface
 
         $confirmationLink = sprintf('https://'.self::HOST.'/email/confirm?token=%s', $token);
 
-        $this->confirmEmail($user,$confirmationLink);
+        $this->confirmEmail($user, $confirmationLink);
     }
 
     public function confirmEmail(User $user, $confirmationLink): void
@@ -65,10 +65,6 @@ final class RegisterMailSubscriber implements EventSubscriberInterface
         $this->mailer->send($message);
     }
 
-    /**
-     * @param User $user
-     * @return string
-     */
     public function generateToken(User $user): string
     {
         $payload = [
@@ -78,5 +74,4 @@ final class RegisterMailSubscriber implements EventSubscriberInterface
 
         return JWT::encode($payload, '12345', 'HS256');
     }
-
 }

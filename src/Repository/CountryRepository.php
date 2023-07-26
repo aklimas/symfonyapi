@@ -25,8 +25,6 @@ class CountryRepository extends ServiceEntityRepository
         return $this->findBy(['verified' => true, 'softDelete' => null]);
     }
 
-
-
     public function save(Country $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -44,5 +42,4 @@ class CountryRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-
 }

@@ -7,3 +7,5 @@ lexik_jwt_authentication:
         check_path: /auth
         username_path: email
         password_path: password
+    # Set the token expiration time (in seconds)
+    token_ttl: 360000 # 1 hour (adjust the value as per your requirements)

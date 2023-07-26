@@ -10,7 +10,8 @@ use Symfony\Component\DependencyInjection\Container;
 
 class UserTest extends Engine
 {
-    public function testCreateUser()
+
+    public function testCreateUser(): void
     {
 
         $this->createUserRoleUser();
@@ -20,17 +21,17 @@ class UserTest extends Engine
 
         // Additional assertions or checks for the created user, such as checking the response content or querying the database
 
-        $user = $this->em->getRepository(User::class)->findOneBy(['login' => 'login']);
+        $user = $this->em->getRepository(User::class)->findOneBy(['login' => 'userLogin']);
 
         // Example: Assert the user exists in the database
         $this->assertNotNull($user);
         $this->assertEquals('FirstName', $user->getFirstName());
         $this->assertEquals('LastName', $user->getLastName());
-        $this->assertEquals('test@test.pl', $user->getEmail());
+        $this->assertEquals('user@user.pl', $user->getEmail());
 
     }
-/*
-    public function testInvalidCredentials()
+
+    public function testInvalidCredentials(): void
     {
         $client = self::createClient();
 
@@ -48,28 +49,33 @@ class UserTest extends Engine
         $this->assertJsonContains(['message' => 'Invalid credentials.']);
     }
 
-    public function testVerifyUser(){
-        $user = $this->em->getRepository(User::class)->findOneBy(['login' => 'login']);
+
+    public function testVerifyUser(): void
+    {
+
+        /** @var UserRepository $userRepository */
+        $userRepository = $this->em->getRepository(User::class);
+
+        $user = $userRepository->findOneBy(['login' => 'userLogin']);
         $user->setIsVerified(true);
-        $this->em->getRepository(User::class)->save($user,true);
+        $userRepository->save($user, true);
         $this->assertEquals(true, true);
     }
 
-     public function testSuccessfulLogin()
-     {
-         $client = self::createClient();
+    public function testSuccessfulLogin(): void
+    {
+        $client = self::createClient();
 
-         // Send a login request with valid credentials
-         $response = $client->request('POST', '/auth', [
-             'headers' => ['Content-Type' => 'application/json'],
-             'json' => [
-                 'email' => 'test@test.pl',
-                 'password' => 'AAbbcc1133**',
-             ],
-         ]);
+        // Send a login request with valid credentials
+        $response = $client->request('POST', '/auth', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'json' => [
+                'email' => 'user@user.pl',
+                'password' => 'AAbbcc1133**',
+            ],
+        ]);
 
-         $this->assertResponseStatusCodeSame(200);
-         $json = $response->toArray();
-         $this->assertArrayHasKey('token', $json);
-     }*/
+        $this->assertResponseStatusCodeSame(200);
+        $this->assertArrayHasKey('token', $response->toArray());
+    }
 }

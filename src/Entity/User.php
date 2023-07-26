@@ -9,8 +9,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\UserRepository;
-use App\State\CountriesCollectionExcelStateProvider;
-use App\State\User\Processor\UserDeleteStateProcessor;
+use App\State\User\Processor\UserDelete;
 use App\State\User\Processor\UserPasswordHasher;
 use App\State\User\Provider\UserCollectionStateProvider;
 use App\State\User\Provider\UserItemStateProvider;
@@ -18,6 +17,7 @@ use App\State\User\Provider\UserPdfStateProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use ApiPlatform\OpenApi\Model;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -28,31 +28,46 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new Get(
+            openapi: new Model\Operation(
+                summary: 'What ?',
+                description: 'I dont know',
+            ),
+            normalizationContext: ['groups' => 'readUser'],
+            security: "is_granted('ROLE_USER') or (is_granted('ROLE_ADMIN') or object == user)",
+        ),
+        new Get(
             uriTemplate: '/user/{id}/pdf',
-            //security: "is_granted('ROLE_USER')",
-            formats: ["pdf" => ["mimeType" => "application/pdf"]],
-            //read: false,
-            //"formats"={"csv"={"text/csv"}},
-            //controller: YourExportController::class,
+            formats: ['pdf' => ['mimeType' => 'application/pdf']],
+            openapi: new Model\Operation(
+                summary: 'What ?',
+                description: 'I dont know',
+            ),
+            security: "is_granted('ROLE_USER')",
             provider: UserPdfStateProvider::class,
         ),
         new GetCollection(
-            normalizationContext: ['groups' => 'readUser'],
+            openapi: new Model\Operation(
+                summary: 'What ?',
+                description: 'I dont know',
+            ),
+            normalizationContext: ['groups' => 'readUserCollection'],
             security: "is_granted('ROLE_USER')",
-            provider: UserCollectionStateProvider::class,
-        ),
-        new Get(
-            normalizationContext: ['groups' => 'readUser'],
-            security: "is_granted('ROLE_USER') or (is_granted('ROLE_ADMIN') or object == user)",
-            provider: UserItemStateProvider::class
         ),
         new Post(
+            openapi: new Model\Operation(
+                summary: 'Create user',
+                description: 'A method to create a user without verification. An email is sent with a confirmation link.',
+            ),
             normalizationContext: ['groups' => 'readUser'],
             denormalizationContext: ['groups' => 'createUser'],
             processor: UserPasswordHasher::class,
         ),
         new Put(
             uriTemplate: '/user/update/{id}',
+            openapi: new Model\Operation(
+                summary: 'What ?',
+                description: 'I dont know',
+            ),
             normalizationContext: ['groups' => 'readUser'],
             denormalizationContext: ['groups' => 'updateUser'],
             security: "(is_granted('ROLE_ADMIN') or object == user)",
@@ -60,9 +75,13 @@ use Symfony\Component\Validator\Constraints as Assert;
             processor: UserPasswordHasher::class
         ),
         new Delete(
+            openapi: new Model\Operation(
+                summary: 'What ?',
+                description: 'I dont know',
+            ),
             denormalizationContext: ['groups' => 'deleteUser'],
             security: "is_granted('ROLE_ADMIN')",
-            processor: UserDeleteStateProcessor::class
+            processor: UserDelete::class
         ),
     ],
 )]
@@ -73,17 +92,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['readUser'])]
+    #[Groups(['readUser','readUserCollection'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['createUser'])]
+    #[Groups(['createUser','readUser','readUserCollection'])]
     #[Assert\NotBlank(
         message: 'Complete the e-mail address',
     )]
     #[Assert\Email(
         message: 'The email {{ value }} is not a valid email.',
-        mode: "strict"
+        mode: 'strict'
     )]
     #[Assert\Length(
         max: 180,
@@ -107,7 +126,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 30)]
-    #[Groups(['readUser', 'createUser', 'updateUser','readCountry'])]
+    #[Groups(['readUser','readUserCollection', 'createUser', 'updateUser', 'readCountry'])]
     #[Assert\NotBlank(
         message: 'Required field',
     )]
@@ -120,7 +139,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $firstName = null;
 
     #[ORM\Column(length: 30)]
-    #[Groups(['readUser', 'createUser', 'updateUser','readCountry'])]
+    #[Groups(['readUser','readUserCollection', 'createUser', 'updateUser', 'readCountry'])]
     #[Assert\NotBlank(
         message: 'Required field',
     )]
@@ -133,13 +152,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $lastName = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['createUser', 'updateUser'])]
+    #[Groups(['createUser', 'updateUser','readUser','readUserCollection'])]
     #[Assert\NotBlank(
         message: 'Required field',
     )]
     private ?\DateTimeInterface $dateBirthday;
 
     #[ORM\Column(type: 'boolean')]
+    #[Groups(['readUser','readUserCollection'])]
     private bool $isVerified = false;
 
     #[ORM\Column(length: 30)]
@@ -163,20 +183,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups('deleteUser')]
     private ?bool $softDelete = null;
 
-    #[Groups('readUser')]
+    #[Groups(['readUser','readUserCollection'])]
     private mixed $age;
 
-    /**
-     * @return mixed
-     */
     public function getAge(): mixed
     {
         return $this->age;
     }
 
-    /**
-     * @param int $age
-     */
     public function setAge(int $age): void
     {
         $this->age = $age;
@@ -211,7 +225,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string)$this->email;
+        return (string) $this->email;
     }
 
     /**

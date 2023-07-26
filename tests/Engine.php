@@ -11,6 +11,7 @@ use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class Engine extends ApiTestCase
 {
@@ -23,12 +24,15 @@ class Engine extends ApiTestCase
             ->get('doctrine')
             ->getManager();
 
-        $this->clearDB();
+
+        //echo "ffsdfsd";
 
     }
 
-    public function createUserRoleUser()
+    public function createUserRoleUser(): ResponseInterface
     {
+        $this->clearDB();
+
         $client = static::createClient();
         return $client->request('POST', '/api/users', [
             'headers' => ['Content-Type' => 'application/json'],
@@ -62,6 +66,8 @@ class Engine extends ApiTestCase
             ],
         ]);
 
+
+        /** @var UserRepository $userRepository */
         $userRepository = $this->em->getRepository(User::class);
         $adminUser = $userRepository->findOneBy(['login' => 'adminLogin']);
         $adminUser->setIsVerified(true);

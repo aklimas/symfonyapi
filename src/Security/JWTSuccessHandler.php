@@ -2,7 +2,6 @@
 
 namespace App\Security;
 
-
 use App\Repository\UserRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,12 +18,11 @@ class JWTSuccessHandler implements AuthenticationSuccessHandlerInterface
         $this->jwtManager = $jwtManager;
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token) :Response
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token): Response
     {
         $user = $this->userRepository->find($token->getUser());
 
-        if($user->isVerified() === false){
-
+        if (false === $user->isVerified()) {
             $responseData = [
                 'code' => 401,
                 'message' => 'Invalid credentials.',

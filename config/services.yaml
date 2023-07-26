@@ -29,24 +29,26 @@ services:
             $processor: '@api_platform.doctrine.orm.state.persist_processor'
 
 
-
-    App\State\Country\Processor\CountryItemStateProcessor:
+    App\State\Country\Processor\CountryVisit:
         bind:
             $processor: '@api_platform.doctrine.orm.state.persist_processor'
 
-    App\State\Country\Processor\Visit:
+    App\State\Country\Processor\CountryAccept:
         bind:
             $processor: '@api_platform.doctrine.orm.state.persist_processor'
-
-    App\State\User\Provider\UserItemStateProvider:
-        bind:
-            $itemProvider: '@api_platform.doctrine.orm.state.item_provider'
 
     App\State\User\Provider\UserPdfStateProvider:
         bind:
             $itemProvider: '@api_platform.doctrine.orm.state.item_provider'
 
+    App\Serializer\UserDataNormalizer:
+        arguments:
+            $normalizer: '@api_platform.serializer.normalizer.item'
 
+    App\Serializer\CountryDataNormalizer:
+        arguments:
+            $normalizer: '@api_platform.serializer.normalizer.item'
 
-
-
+    App\Serializer\CountryDenormalizer:
+        tags:
+            - { name: serializer.normalizer }

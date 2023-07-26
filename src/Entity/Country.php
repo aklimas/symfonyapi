@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -10,10 +11,9 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use App\Repository\CountryRepository;
-use App\State\CountriesCollectionExcelStateProvider;
-use App\State\Country\Processor\Accept;
-use App\State\Country\Processor\CountryItemStateProcessor;
-use App\State\Country\Processor\Visit;
+use App\State\Country\Processor\CountryAccept;
+use App\State\Country\Processor\CountryVisit;
+use App\State\Country\Provider\CountryCollectionExportToExcel;
 use App\State\Country\Provider\CountryCollectionStateProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -21,100 +21,85 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[
-ApiResource(
+#[ApiResource(
     operations: [
         new GetCollection(
-            uriTemplate: '/countries/excel',
-            //security: "is_granted('ROLE_USER')",
-            formats: ["xlsx" => ["mimeType" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]],
-            //read: false,
-            //"formats"={"csv"={"text/csv"}},
-            //controller: YourExportController::class,
-            provider: CountriesCollectionExcelStateProvider::class,
-        ),
-        new GetCollection(
+            openapi: new Model\Operation(
+                summary: 'What ?',
+                description: 'I dont know',
+            ),
             normalizationContext: ['groups' => 'readCountry'],
-            security: "is_granted('ROLE_USER')",
             provider: CountryCollectionStateProvider::class,
         ),
+        new GetCollection(
+            uriTemplate: '/countries/excel',
+            formats: ['xlsx' => ['mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            openapi: new Model\Operation(
+                summary: 'Method for exporting the list of countries to Excel (xlsx)',
+                description: 'Method for exporting the list of countries to Excel (xlsx). The collection will return a list of countries with the number of visitors. Method available for ROLE_USER',
+            ),
+            provider: CountryCollectionExportToExcel::class,
+        ),
+        new Get(
+            openapi: new Model\Operation(
+                summary: 'What ?',
+                description: 'I dont know',
+            ),
+            normalizationContext: ['groups' => 'readCountry'],
+            security: "is_granted('ROLE_USER')",
+        ),
         new Post(
+            openapi: new Model\Operation(
+                summary: 'What ?',
+                description: 'I dont know',
+            ),
             normalizationContext: ['groups' => 'readCountry'],
             denormalizationContext: ['groups' => 'writeCountry'],
             security: "is_granted('ROLE_USER')",
-            processor: CountryItemStateProcessor::class
+            processor: CountryAccept::class,
         ),
         new Put(
+            openapi: new Model\Operation(
+                summary: 'What ?',
+                description: 'I dont know',
+            ),
             normalizationContext: ['groups' => ''],
             denormalizationContext: ['groups' => 'writeCountry'],
             security: "is_granted('ROLE_ADMIN')",
         ),
         new Put(
-            uriTemplate: '/country/{id}/accept',
+            uriTemplate: '/countries/{id}/accept',
             openapi: new Model\Operation(
                 summary: 'Accept country',
-                description: "Accepting the entry provided by the user"
+                description: 'Accepting the entry provided by the user'
             ),
+            denormalizationContext: ['groups' => 'acceptCountry'],
             security: "is_granted('ROLE_ADMIN')",
-            processor: Accept::class
+            processor: CountryAccept::class
         ),
         new Put(
-            uriTemplate: '/country/{id}/visit',
+            uriTemplate: '/countries/{id}/visit',
             openapi: new Model\Operation(
                 summary: 'Visiting the country',
-                description: "Marking the country in which the user was"
+                description: 'Marking the country in which the user was'
             ),
+            normalizationContext: ['groups' => []],
             security: "is_granted('ROLE_USER')",
-            processor: Visit::class,
-        ),
-        new Put(
-            uriTemplate: '/country/{id}/file',
-            formats: ["jpg" => ["mimeType" => "application/jpg"]],
-            openapi: new Model\Operation(
-                summary: 'Send Flag',
-                description: "Accepting the entry provided by the user",
-                requestBody:[
-
-                ]
-            ),
-            security: "is_granted('ROLE_ADMIN')",
-            processor: Accept::class,
+            processor: CountryVisit::class,
         ),
         new Delete(
-            security: "is_granted('ROLE_USER')",
+            openapi: new Model\Operation(
+                summary: 'What ?',
+                description: 'I dont know',
+            ),
+            security: "is_granted('ROLE_ADMIN')",
         ),
-
     ],
-    normalizationContext: ['groups' => ''],
-    denormalizationContext: ['groups' => ''],
-
 )]
-
-/*
- * "openapi_context"={
- *                 "requestBody"={
- *                     "content"={
- *                         "multipart/form-data"={
- *                             "schema"={
- *                                 "type"="object",
- *                                 "properties"={
- *                                     "file"={
- *                                         "type"="string",
- *                                         "format"="binary"
- *                                     }
- *                                 }
- *                             }
- *                         }
- *                     }
- *                 }
- *             }},
- */
 #[ORM\Entity(repositoryClass: CountryRepository::class)]
 class Country
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private ?int $id = null;
 
     #[Groups(['readCountry', 'writeCountry', 'readUser'])]
@@ -122,30 +107,29 @@ class Country
     #[Assert\NotBlank]
     private ?string $name = null;
 
-    #[ORM\Column(length: 20, nullable: true)]
-    public ?string $flag = null;
-
-    #[Groups(['visitCountry', 'readCountry'])]
+    #[Groups(['visitCountry', 'readCountry', 'writeCountry'])]
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'country')]
     private Collection $users;
 
-    #[Groups(['acceptCountry', 'readCountry'])]
+    #[Groups(['acceptCountry', 'readCountry', 'acceptCountry'])]
     #[ORM\Column(nullable: true)]
     private ?bool $verified = null;
+
+    #[ORM\ManyToOne(targetEntity: MediaObject::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups('writeCountry')]
+    #[ApiProperty(types: ['https://schema.org/image'])]
+    public ?MediaObject $image = null;
+
+    #[ORM\OneToMany(mappedBy: 'country', targetEntity: Language::class, cascade: ['persist'])]
+    #[Groups(['readCountry', 'writeCountry'])]
+    private Collection $languages;
 
     #[Groups(['readCountry'])]
     private int $countUser;
 
-    #[ORM\OneToMany(mappedBy: 'country', targetEntity: Language::class)]
-    #[Groups(['readCountry'])]
-    private Collection $languages;
-
-    #[Groups(['writeCountry'])]
-    private array $language = [];
-
-    public function __construct($name)
+    public function __construct()
     {
-        $this->name = $name;
         $this->users = new ArrayCollection();
         $this->languages = new ArrayCollection();
     }
@@ -154,7 +138,6 @@ class Country
     {
         return $this->id;
     }
-
 
     public function setName(string $name): static
     {
@@ -171,7 +154,7 @@ class Country
         return $this->users;
     }
 
-    public function addUser(User $user): static
+    public function addUser(?User $user): static
     {
         if (!$this->users->contains($user)) {
             $this->users->add($user);
@@ -241,33 +224,4 @@ class Country
     {
         return $this->name;
     }
-
-    public function getFlag(): ?MediaObject
-    {
-        return $this->flag;
-    }
-
-    public function setFlag(?MediaObject $flag): static
-    {
-        $this->flag = $flag;
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getLanguage(): array
-    {
-        return $this->language;
-    }
-
-    /**
-     * @param array $language
-     */
-    public function setLanguage(array $language): void
-    {
-        $this->language = $language;
-    }
-
 }
