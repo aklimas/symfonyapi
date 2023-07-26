@@ -14,6 +14,7 @@ class CountryDataNormalizer implements NormalizerInterface
 
     public function normalize($entity, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
+
         $data = $this->normalizer->normalize($entity, $format, $context);
 
         if ($this->security->isGranted('ROLE_ADMIN')) {

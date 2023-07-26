@@ -49,3 +49,6 @@ services:
         arguments:
             $normalizer: '@api_platform.serializer.normalizer.item'
 
+    App\Serializer\CountryDenormalizer:
+        arguments:
+            $denormalizer: '@api_platform.serializer.normalizer.item'

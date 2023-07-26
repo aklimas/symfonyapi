@@ -13,16 +13,17 @@ class UserDataNormalizer implements NormalizerInterface
         private readonly NormalizerInterface $normalizer,
         private readonly Security            $security,
         private readonly DateService         $dateService
-    )
-    {
+    ) {
     }
 
     public function normalize($entity, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
+
         $data = $this->normalizer->normalize($entity, $format, $context);
 
-
-        $data['age'] = $this->dateService->calculateAge($data['dateBirthday']);
+        if (isset($data['dateBirthday'])) {
+            $data['age'] = $this->dateService->calculateAge($data['dateBirthday']);
+        }
 
 
         if ($this->security->isGranted('ROLE_ADMIN')) {
