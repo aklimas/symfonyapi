@@ -22,13 +22,13 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ApiResource(
     types: ['https://schema.org/MediaObject'],
     operations: [
-        //new Get(),
+        new Get(),
         //new GetCollection(),
         new Post(
             controller: CreateMediaObjectAction::class,
             openapi: new Model\Operation(
-                summary: 'What ?',
-                description: 'I dont know',
+                summary: 'Upload Image',
+                description: 'The method used to transfer images. Accepted formats: image/jpg, image/jpeg, image/png',
                 requestBody: new Model\RequestBody(
                     content: new \ArrayObject([
                         'multipart/form-data' => [
@@ -60,6 +60,11 @@ class MediaObject
     public ?string $contentUrl = null;
     #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePath')]
     #[Assert\NotNull(groups: ['media_object_create'])]
+    #[Assert\File(
+        maxSize: "2048k",
+        mimeTypes: ["image/jpg", "image/jpeg", "image/png"],
+        mimeTypesMessage: "Please upload a valid image [JPG/PNG]"
+    )]
     public ?File $file = null;
     #[ORM\Column(nullable: true)]
     public ?string $filePath = null;

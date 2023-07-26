@@ -11,8 +11,6 @@ use ApiPlatform\Metadata\Put;
 use App\Repository\UserRepository;
 use App\State\User\Processor\UserDelete;
 use App\State\User\Processor\UserPasswordHasher;
-use App\State\User\Provider\UserCollectionStateProvider;
-use App\State\User\Provider\UserItemStateProvider;
 use App\State\User\Provider\UserPdfStateProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -29,26 +27,27 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new Get(
             openapi: new Model\Operation(
-                summary: 'What ?',
-                description: 'I dont know',
+                summary: 'User item',
+                description: 'A method used to return the data of the selected user. The amount of data depends on the role.',
             ),
             normalizationContext: ['groups' => 'readUser'],
-            security: "is_granted('ROLE_USER') or (is_granted('ROLE_ADMIN') or object == user)",
+            security: "is_granted('ROLE_USER')",
         ),
         new Get(
             uriTemplate: '/user/{id}/pdf',
             formats: ['pdf' => ['mimeType' => 'application/pdf']],
             openapi: new Model\Operation(
-                summary: 'What ?',
-                description: 'I dont know',
+                summary: 'User item in PDF',
+                description: 'A method used to return the data of the selected user in PDF',
             ),
+            normalizationContext: ['groups' => ''],
             security: "is_granted('ROLE_USER')",
             provider: UserPdfStateProvider::class,
         ),
         new GetCollection(
             openapi: new Model\Operation(
-                summary: 'What ?',
-                description: 'I dont know',
+                summary: 'User Collection',
+                description: 'A method for returning a list of users. The amount of data depends on the role.',
             ),
             normalizationContext: ['groups' => 'readUserCollection'],
             security: "is_granted('ROLE_USER')",
@@ -65,19 +64,18 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Put(
             uriTemplate: '/user/update/{id}',
             openapi: new Model\Operation(
-                summary: 'What ?',
-                description: 'I dont know',
+                summary: 'Update User',
+                description: 'A method for updating selected user data.',
             ),
             normalizationContext: ['groups' => 'readUser'],
             denormalizationContext: ['groups' => 'updateUser'],
             security: "(is_granted('ROLE_ADMIN') or object == user)",
-            provider: UserItemStateProvider::class,
             processor: UserPasswordHasher::class
         ),
         new Delete(
             openapi: new Model\Operation(
-                summary: 'What ?',
-                description: 'I dont know',
+                summary: 'Delete User',
+                description: 'A method for removing a country using the soft delete method',
             ),
             denormalizationContext: ['groups' => 'deleteUser'],
             security: "is_granted('ROLE_ADMIN')",

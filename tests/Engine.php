@@ -29,22 +29,33 @@ class Engine extends ApiTestCase
 
     }
 
-    public function createUserRoleUser(): ResponseInterface
+    public function createUserRoleUser(): void
     {
         $this->clearDB();
 
-        $client = static::createClient();
-        return $client->request('POST', '/api/users', [
-            'headers' => ['Content-Type' => 'application/json'],
-            'json' => [
-                'login' => 'userLogin',
-                'email' => 'user@user.pl',
-                'password' => 'AAbbcc1133**',
-                'firstName' => 'FirstName',
-                'lastName' => 'LastName',
-                'dateBirthday' => '1987-01-01T15:53:44.445Z'
-            ],
-        ]);
+
+        /** @var UserRepository $userRepository */
+        $userRepository = $this->em->getRepository(User::class);
+        $user = $userRepository->findOneBy(['login' => 'userLogin']);
+        if (!$user) {
+            $client = static::createClient();
+            $user = $client->request('POST', '/api/users', [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => [
+                    'login' => 'userLogin',
+                    'email' => 'user@user.pl',
+                    'password' => 'AAbbcc1133**',
+                    'firstName' => 'FirstName',
+                    'lastName' => 'LastName',
+                    'dateBirthday' => '1987-01-01T15:53:44.445Z'
+                ],
+            ]);
+        }
+
+        $user = $userRepository->findOneBy(['login' => 'userLogin']);
+        $user->setIsVerified(true);
+        $userRepository->save($user, true);
+
     }
 
     /**
@@ -53,25 +64,28 @@ class Engine extends ApiTestCase
      */
     public function createUserRoleAdmin(): void
     {
-        $client = static::createClient();
-        $client->request('POST', '/api/users', [
-            'headers' => ['Content-Type' => 'application/json'],
-            'json' => [
-                'login' => 'adminLogin',
-                'email' => 'admin@admin.pl',
-                'password' => 'AAbbcc1133**',
-                'firstName' => 'FirstNameAdmin',
-                'lastName' => 'LastNameAdmin',
-                'dateBirthday' => '1987-01-01T15:53:44.445Z'
-            ],
-        ]);
-
-
+        $this->clearDB();
         /** @var UserRepository $userRepository */
         $userRepository = $this->em->getRepository(User::class);
         $adminUser = $userRepository->findOneBy(['login' => 'adminLogin']);
+        if (!$adminUser) {
+            $client = static::createClient();
+            $client->request('POST', '/api/users', [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => [
+                    'login' => 'adminLogin',
+                    'email' => 'admin@admin.pl',
+                    'password' => 'AAbbcc1133**',
+                    'firstName' => 'FirstNameAdmin',
+                    'lastName' => 'LastNameAdmin',
+                    'dateBirthday' => '1987-01-01T15:53:44.445Z'
+                ],
+            ]);
+        }
+
+        $adminUser = $userRepository->findOneBy(['login' => 'adminLogin']);
         $adminUser->setIsVerified(true);
-        $userRepository->save($adminUser,true);
+        $userRepository->save($adminUser, true);
     }
 
     /**

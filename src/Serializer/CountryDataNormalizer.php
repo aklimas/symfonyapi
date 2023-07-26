@@ -16,7 +16,16 @@ class CountryDataNormalizer implements NormalizerInterface
     {
         $data = $this->normalizer->normalize($entity, $format, $context);
 
+        if ($this->security->isGranted('ROLE_ADMIN')) {
+            return $data;
+        }
+
+        if (isset($data['verified'])) {
+            unset($data['verified']);
+        }
+
         if ($this->security->isGranted('ROLE_USER')) {
+
             return $data;
         }
 

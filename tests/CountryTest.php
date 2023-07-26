@@ -29,8 +29,8 @@ class CountryTest extends Engine
     public function testAddNewCountry(): void
     {
         $client = self::createClient();
+        $this->createUserRoleUser();
 
-        // Send a login request with valid credentials
         $response = $client->request('POST', '/api/countries', [
             'headers' => [
                 'Content-Type' => 'application/json',
@@ -80,7 +80,7 @@ class CountryTest extends Engine
         $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
 
         $client = self::createClient();
-        $response = $client->request('PUT', '/api/country/'.$country->getId().'/accept', [
+        $response = $client->request('PUT', '/api/countries/'.$country->getId().'/accept', [
             'headers' => [
                 'Content-Type' => 'application/json',
                 'Authorization' => $this->headerUser()
@@ -100,7 +100,7 @@ class CountryTest extends Engine
     {
         $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
         $client = self::createClient();
-        $response = $client->request('PUT', '/api/country/'.$country->getId().'/visit', [
+        $response = $client->request('PUT', '/api/countries/'.$country->getId().'/visit', [
             'headers' => [
                 'Content-Type' => 'application/json',
                 'Authorization' => $this->headerUser()
@@ -121,7 +121,7 @@ class CountryTest extends Engine
         $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
 
         $client = self::createClient();
-        $response = $client->request('GET', '/api/country/'.$country->getId().'/accept', [
+        $response = $client->request('GET', '/api/countries/'.$country->getId().'/accept', [
             'headers' => [
                 'Content-Type' => 'application/json',
                 'Authorization' => $this->headerAdmin()
@@ -138,10 +138,6 @@ class CountryTest extends Engine
         //$this->assertTrue(true);
     }
 
-
-
-
-
     public
     function testVisitCountryWhenIsVerified(): void
     {
@@ -151,12 +147,40 @@ class CountryTest extends Engine
     public
     function testDeleteCountryWithRoleUser(): void
     {
-        $this->assertTrue(true);
+        $this->createUserRoleUser();
+
+        $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
+
+        $client = self::createClient();
+        $response = $client->request('DELETE', '/api/countries/'.$country->getId(), [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => $this->headerUser()
+            ]
+        ]);
+
+
+        $this->assertEquals(403, $response->getStatusCode());
     }
 
     public
     function testDeleteCountryWithRoleAdmin(): void
     {
-        $this->assertTrue(true);
+        $this->createUserRoleAdmin();
+
+        $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
+
+        $client = self::createClient();
+        $response = $client->request('DELETE', '/api/countries/'.$country->getId(), [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => $this->headerAdmin()
+            ]
+        ]);
+
+
+        $this->assertResponseStatusCodeSame(200);
+
+
     }
 }

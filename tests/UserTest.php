@@ -66,7 +66,6 @@ class UserTest extends Engine
     {
         $client = self::createClient();
 
-        // Send a login request with valid credentials
         $response = $client->request('POST', '/auth', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => [

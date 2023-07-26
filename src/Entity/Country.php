@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
@@ -25,8 +26,8 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new GetCollection(
             openapi: new Model\Operation(
-                summary: 'What ?',
-                description: 'I dont know',
+                summary: 'Country Collection',
+                description: 'A method that returns a list of countries with the number of visitors. The amount of data depends on the role.',
             ),
             normalizationContext: ['groups' => 'readCountry'],
             provider: CountryCollectionStateProvider::class,
@@ -42,16 +43,16 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Get(
             openapi: new Model\Operation(
-                summary: 'What ?',
-                description: 'I dont know',
+                summary: 'Country Item',
+                description: 'A method that returns one country with the number of visitors. The amount of data depends on the role.',
             ),
             normalizationContext: ['groups' => 'readCountry'],
             security: "is_granted('ROLE_USER')",
         ),
         new Post(
             openapi: new Model\Operation(
-                summary: 'What ?',
-                description: 'I dont know',
+                summary: 'Add Country',
+                description: 'The method for adding a country.',
             ),
             normalizationContext: ['groups' => 'readCountry'],
             denormalizationContext: ['groups' => 'writeCountry'],
@@ -60,19 +61,26 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Put(
             openapi: new Model\Operation(
-                summary: 'What ?',
-                description: 'I dont know',
+                summary: 'Update Country',
+                description: 'The method to update the country. The update is available only to the administrator.',
             ),
-            normalizationContext: ['groups' => ''],
+            normalizationContext: ['groups' => 'readCountry'],
             denormalizationContext: ['groups' => 'writeCountry'],
             security: "is_granted('ROLE_ADMIN')",
         ),
         new Put(
             uriTemplate: '/countries/{id}/accept',
             openapi: new Model\Operation(
+                responses: [
+                    200 => [
+                        'description' => '[]',
+                        'content' => []
+                    ]
+                ],
                 summary: 'Accept country',
                 description: 'Accepting the entry provided by the user'
             ),
+            normalizationContext: ['groups' => []],
             denormalizationContext: ['groups' => 'acceptCountry'],
             security: "is_granted('ROLE_ADMIN')",
             processor: CountryAccept::class
@@ -80,6 +88,12 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Put(
             uriTemplate: '/countries/{id}/visit',
             openapi: new Model\Operation(
+                responses: [
+                    200 => [
+                        'description' => '[]',
+                        'content' => []
+                    ]
+                ],
                 summary: 'Visiting the country',
                 description: 'Marking the country in which the user was'
             ),
@@ -89,8 +103,8 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             openapi: new Model\Operation(
-                summary: 'What ?',
-                description: 'I dont know',
+                summary: 'Delete Country',
+                description: 'A method for removing a country using the hard delete method',
             ),
             security: "is_granted('ROLE_ADMIN')",
         ),

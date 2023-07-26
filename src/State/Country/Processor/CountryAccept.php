@@ -16,6 +16,7 @@ class CountryAccept extends AbstractController implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): JsonResponse|Country
     {
+
         if (!$data instanceof Country) {
             return $this->json([
                 'message' => 'Not found country',

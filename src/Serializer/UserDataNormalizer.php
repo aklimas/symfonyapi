@@ -11,8 +11,8 @@ class UserDataNormalizer implements NormalizerInterface
 {
     public function __construct(
         private readonly NormalizerInterface $normalizer,
-        private readonly Security $security,
-        private readonly DateService $dateService
+        private readonly Security            $security,
+        private readonly DateService         $dateService
     )
     {
     }
@@ -21,7 +21,9 @@ class UserDataNormalizer implements NormalizerInterface
     {
         $data = $this->normalizer->normalize($entity, $format, $context);
 
+
         $data['age'] = $this->dateService->calculateAge($data['dateBirthday']);
+
 
         if ($this->security->isGranted('ROLE_ADMIN')) {
             return $data;
@@ -47,7 +49,6 @@ class UserDataNormalizer implements NormalizerInterface
         if (isset($data['users'])) {
             unset($data['users']);
         }
-
 
 
         return $data;
