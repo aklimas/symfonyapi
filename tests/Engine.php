@@ -24,22 +24,19 @@ class Engine extends ApiTestCase
             ->get('doctrine')
             ->getManager();
 
-
-        //echo "ffsdfsd";
-
+        // echo "ffsdfsd";
     }
 
-    public function createUserRoleUser(): void
+    public function createUserRoleUser(): ?ResponseInterface
     {
-        $this->clearDB();
-
+        $response = null;
 
         /** @var UserRepository $userRepository */
         $userRepository = $this->em->getRepository(User::class);
         $user = $userRepository->findOneBy(['login' => 'userLogin']);
         if (!$user) {
             $client = static::createClient();
-            $user = $client->request('POST', '/api/users', [
+            $response = $client->request('POST', '/api/users', [
                 'headers' => ['Content-Type' => 'application/json'],
                 'json' => [
                     'login' => 'userLogin',
@@ -47,7 +44,7 @@ class Engine extends ApiTestCase
                     'password' => 'AAbbcc1133**',
                     'firstName' => 'FirstName',
                     'lastName' => 'LastName',
-                    'dateBirthday' => '1987-01-01T15:53:44.445Z'
+                    'dateBirthday' => '1987-01-01T15:53:44.445Z',
                 ],
             ]);
         }
@@ -56,15 +53,14 @@ class Engine extends ApiTestCase
         $user->setIsVerified(true);
         $userRepository->save($user, true);
 
+        return $response;
     }
 
     /**
-     * @return void
      * @throws TransportExceptionInterface
      */
     public function createUserRoleAdmin(): void
     {
-        $this->clearDB();
         /** @var UserRepository $userRepository */
         $userRepository = $this->em->getRepository(User::class);
         $adminUser = $userRepository->findOneBy(['login' => 'adminLogin']);
@@ -78,19 +74,17 @@ class Engine extends ApiTestCase
                     'password' => 'AAbbcc1133**',
                     'firstName' => 'FirstNameAdmin',
                     'lastName' => 'LastNameAdmin',
-                    'dateBirthday' => '1987-01-01T15:53:44.445Z'
+                    'dateBirthday' => '1987-01-01T15:53:44.445Z',
                 ],
             ]);
         }
 
         $adminUser = $userRepository->findOneBy(['login' => 'adminLogin']);
         $adminUser->setIsVerified(true);
+        $adminUser->setRoles(['ROLE_ADMIN']);
         $userRepository->save($adminUser, true);
     }
 
-    /**
-     * @return void
-     */
     protected function clearDB(): void
     {
         $this->em->createQuery(
@@ -147,5 +141,4 @@ class Engine extends ApiTestCase
 
         return "Bearer {$array['token']}";
     }
-
 }

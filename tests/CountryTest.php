@@ -6,7 +6,6 @@ use App\Entity\Country;
 
 class CountryTest extends Engine
 {
-
     public function testAddNewCountryWithoutAuth(): void
     {
         $client = self::createClient();
@@ -17,12 +16,12 @@ class CountryTest extends Engine
                 'Content-Type' => 'application/json',
             ],
             'json' => [
-                "name" => "Polska",
-                "languages" => [
-                    ["name" => "Polski"],
-                    ["name" => "Angielski"]
-                ]
-            ]
+                'name' => 'Polska',
+                'languages' => [
+                    ['name' => 'Polski'],
+                    ['name' => 'Angielski'],
+                ],
+            ],
         ]);
         $this->assertResponseStatusCodeSame(401);
     }
@@ -35,15 +34,15 @@ class CountryTest extends Engine
         $response = $client->request('POST', '/api/countries', [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'Authorization' => $this->headerUser()
+                'Authorization' => $this->headerUser(),
             ],
             'json' => [
-                "name" => "Polska",
-                "languages" => [
-                    ["name" => "Polski"],
-                    ["name" => "Angielski"]
-                ]
-            ]
+                'name' => 'Polska',
+                'languages' => [
+                    ['name' => 'Polski'],
+                    ['name' => 'Angielski'],
+                ],
+            ],
         ]);
         $this->assertResponseStatusCodeSame(200);
         $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
@@ -61,67 +60,61 @@ class CountryTest extends Engine
         $response = $client->request('GET', '/api/countries', [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'Authorization' => $this->headerUser()
-            ]
+                'Authorization' => $this->headerUser(),
+            ],
         ]);
         $this->assertResponseStatusCodeSame(200);
 
-        //var_dump($response->getContent());
-
+        // var_dump($response->getContent());
 
         $this->assertTrue(true);
     }
 
     public function testAcceptedCountryWithRoleUser(): void
     {
-
         $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
 
         $client = self::createClient();
-        $response = $client->request('PUT', '/api/countries/' . $country->getId() . '/accept', [
+        $response = $client->request('PUT', '/api/countries/'.$country->getId().'/accept', [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'Authorization' => $this->headerUser()
-            ]
+                'Authorization' => $this->headerUser(),
+            ],
         ]);
         $this->assertResponseStatusCodeSame(200);
 
         $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
 
         $this->assertEquals(false, $country->isVerified());
-
-
     }
 
     public function testVisitCountryWhenIsNotVerified(): void
     {
         $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
         $client = self::createClient();
-        $response = $client->request('PUT', '/api/countries/' . $country->getId() . '/visit', [
+        $response = $client->request('PUT', '/api/countries/'.$country->getId().'/visit', [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'Authorization' => $this->headerUser()
-            ]
+                'Authorization' => $this->headerUser(),
+            ],
         ]);
 
-        //dd($response);
+        // dd($response);
         $this->assertResponseStatusCodeSame(200);
-
     }
 
     public function testAcceptedCountryWithRoleAdmin(): void
     {
-
         $this->createUserRoleAdmin();
 
         $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
 
         $client = self::createClient();
-        $response = $client->request('GET', '/api/countries/' . $country->getId() . '/accept', [
+        $response = $client->request('GET', '/api/countries/'.$country->getId().'/accept', [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'Authorization' => $this->headerAdmin()
-            ]
+                'Authorization' => $this->headerAdmin(),
+            ],
         ]);
 
         $this->assertResponseStatusCodeSame(200);
@@ -130,8 +123,7 @@ class CountryTest extends Engine
 
         $this->assertEquals(false, $country->isVerified());
 
-
-        //$this->assertTrue(true);
+        // $this->assertTrue(true);
     }
 
     public function testVisitCountryWhenIsVerified(): void
@@ -146,13 +138,12 @@ class CountryTest extends Engine
         $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
 
         $client = self::createClient();
-        $response = $client->request('DELETE', '/api/countries/' . $country->getId(), [
+        $response = $client->request('DELETE', '/api/countries/'.$country->getId(), [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'Authorization' => $this->headerUser()
-            ]
+                'Authorization' => $this->headerUser(),
+            ],
         ]);
-
 
         $this->assertEquals(403, $response->getStatusCode());
     }
@@ -164,14 +155,13 @@ class CountryTest extends Engine
         $country = $this->em->getRepository(Country::class)->findOneBy(['name' => 'Polska']);
 
         $client = self::createClient();
-        $response = $client->request('DELETE', '/api/countries/' . $country->getId(), [
+        $response = $client->request('DELETE', '/api/countries/'.$country->getId(), [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'Authorization' => $this->headerAdmin()
-            ]
+                'Authorization' => $this->headerAdmin(),
+            ],
         ]);
 
         $this->assertResponseStatusCodeSame(200);
-
     }
 }

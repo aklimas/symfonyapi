@@ -2,22 +2,18 @@
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use App\Entity\User;
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\DependencyInjection\Container;
 
 class UserTest extends Engine
 {
-
     public function testCreateUser(): void
     {
-
-        $this->createUserRoleUser();
+        $this->clearDB();
+        $response = $this->createUserRoleUser();
 
         // Validate the response
-        $this->assertResponseIsSuccessful();
+        $this->assertEquals(201, $response->getStatusCode());
 
         // Additional assertions or checks for the created user, such as checking the response content or querying the database
 
@@ -28,7 +24,6 @@ class UserTest extends Engine
         $this->assertEquals('FirstName', $user->getFirstName());
         $this->assertEquals('LastName', $user->getLastName());
         $this->assertEquals('user@user.pl', $user->getEmail());
-
     }
 
     public function testInvalidCredentials(): void
@@ -49,20 +44,43 @@ class UserTest extends Engine
         $this->assertJsonContains(['message' => 'Invalid credentials.']);
     }
 
+    public function testValidCredentialsWithNotActivateProfile(): void
+    {
+        $client = self::createClient();
+
+        /** @var UserRepository $userRepository */
+        $userRepository = $this->em->getRepository(User::class);
+        $user = $userRepository->findOneBy(['email' => 'user@user.pl']);
+        $user->setIsVerified(false);
+        $userRepository->save($user, true);
+
+        // Send a login request with invalid credentials
+        $response = $client->request('POST', '/auth', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'json' => [
+                'email' => 'user@user.pl',
+                'password' => 'AAbbcc1133**',
+            ],
+        ]);
+
+        // Validate the response
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertJsonContains(['message' => 'Invalid credentials.']);
+    }
 
     public function testVerifyUser(): void
     {
-
         /** @var UserRepository $userRepository */
         $userRepository = $this->em->getRepository(User::class);
 
         $user = $userRepository->findOneBy(['login' => 'userLogin']);
         $user->setIsVerified(true);
         $userRepository->save($user, true);
+
         $this->assertEquals(true, true);
     }
 
-    public function testSuccessfulLogin(): void
+    public function testValidCredentials(): void
     {
         $client = self::createClient();
 
@@ -77,4 +95,5 @@ class UserTest extends Engine
         $this->assertResponseStatusCodeSame(200);
         $this->assertArrayHasKey('token', $response->toArray());
     }
+
 }
