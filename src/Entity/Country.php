@@ -118,6 +118,10 @@ class Country
     #[Groups(['readCountry', 'writeCountry', 'readUser'])]
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank]
+    #[Assert\Length(
+        max: 20,
+        maxMessage: 'The country {{ limit }} characters',
+    )]
     private ?string $name = null;
 
     #[Groups(['visitCountry', 'readCountry', 'writeCountry'])]
