@@ -3,21 +3,31 @@
 namespace App\EventSubscriber;
 
 use ApiPlatform\Symfony\EventListener\EventPriorities;
+use App\Controller\JWTKey;
 use App\Entity\User;
-use Firebase\JWT\JWT;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
 final class RegisterMailSubscriber implements EventSubscriberInterface
 {
     final public const EMAIL_SENDER = 'dev@programigo.com';
-    final public const HOST = '127.0.0.1:8000';
 
     private MailerInterface $mailer;
+
+    private string $currentHost;
+
+    public function onKernelRequest(RequestEvent $event)
+    {
+        $request = $event->getRequest();
+        $this->currentHost = $request->getHttpHost();
+
+    }
 
     public function __construct(MailerInterface $mailer)
     {
@@ -28,9 +38,13 @@ final class RegisterMailSubscriber implements EventSubscriberInterface
     {
         return [
             KernelEvents::VIEW => ['sendMail', EventPriorities::POST_WRITE],
+            'kernel.request' => 'onKernelRequest',
         ];
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     */
     public function sendMail(ViewEvent $event): void
     {
         $user = $event->getControllerResult();
@@ -45,16 +59,22 @@ final class RegisterMailSubscriber implements EventSubscriberInterface
         }
     }
 
-    public function sendConfirmationEmail(User $user): void
+    /**
+     * @throws TransportExceptionInterface
+     */
+    private function sendConfirmationEmail(User $user): void
     {
-        $token = $this->generateToken($user);
+        $token = JWTKey::generateToken($user);
 
-        $confirmationLink = sprintf('https://'.self::HOST.'/email/confirm?token=%s', $token);
+        $confirmationLink = sprintf('https://'.$this->currentHost.'/email/confirm?token=%s', $token);
 
         $this->confirmEmail($user, $confirmationLink);
     }
 
-    public function confirmEmail(User $user, $confirmationLink): void
+    /**
+     * @throws TransportExceptionInterface
+     */
+    private function confirmEmail(User $user, $confirmationLink): void
     {
         $message = (new Email())
             ->from(self::EMAIL_SENDER)
@@ -65,13 +85,5 @@ final class RegisterMailSubscriber implements EventSubscriberInterface
         $this->mailer->send($message);
     }
 
-    public function generateToken(User $user): string
-    {
-        $payload = [
-            'userId' => $user->getId(),
-            'exp' => time() + 3600,
-        ];
 
-        return JWT::encode($payload, '12345', 'HS256');
-    }
 }

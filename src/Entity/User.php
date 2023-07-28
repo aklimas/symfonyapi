@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use ApiPlatform\OpenApi\Model;
 use App\Repository\UserRepository;
 use App\State\User\Processor\UserDelete;
 use App\State\User\Processor\UserPasswordHasher;
@@ -15,7 +16,6 @@ use App\State\User\Provider\UserPdfStateProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
-use ApiPlatform\OpenApi\Model;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -90,11 +90,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['readUser','readUserCollection'])]
+    #[Groups(['readUser', 'readUserCollection'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['createUser','readUser','readUserCollection'])]
+    #[Groups(['createUser', 'readUser', 'readUserCollection'])]
     #[Assert\NotBlank(
         message: 'Complete the e-mail address',
     )]
@@ -124,7 +124,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 30)]
-    #[Groups(['readUser','readUserCollection', 'createUser', 'updateUser', 'readCountry'])]
+    #[Groups(['readUser', 'readUserCollection', 'createUser', 'updateUser', 'readCountry'])]
     #[Assert\NotBlank(
         message: 'Required field',
     )]
@@ -137,7 +137,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $firstName = null;
 
     #[ORM\Column(length: 30)]
-    #[Groups(['readUser','readUserCollection', 'createUser', 'updateUser', 'readCountry'])]
+    #[Groups(['readUser', 'readUserCollection', 'createUser', 'updateUser', 'readCountry'])]
     #[Assert\NotBlank(
         message: 'Required field',
     )]
@@ -150,14 +150,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $lastName = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['createUser', 'updateUser','readUser','readUserCollection'])]
+    #[Groups(['createUser', 'updateUser', 'readUser', 'readUserCollection'])]
     #[Assert\NotBlank(
         message: 'Required field',
     )]
     private ?\DateTimeInterface $dateBirthday;
 
     #[ORM\Column(type: 'boolean')]
-    #[Groups(['readUser','readUserCollection'])]
+    #[Groups(['readUser', 'readUserCollection'])]
     private bool $isVerified = false;
 
     #[ORM\Column(length: 30)]
@@ -181,7 +181,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups('deleteUser')]
     private ?bool $softDelete = null;
 
-    #[Groups(['readUser','readUserCollection'])]
+    #[Groups(['readUser', 'readUserCollection'])]
     private mixed $age;
 
     public function getAge(): mixed

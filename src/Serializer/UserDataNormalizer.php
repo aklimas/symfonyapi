@@ -5,6 +5,7 @@ namespace App\Serializer;
 use App\Entity\User;
 use App\Service\DateService;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class UserDataNormalizer implements NormalizerInterface
@@ -16,6 +17,10 @@ class UserDataNormalizer implements NormalizerInterface
     ) {
     }
 
+    /**
+     * @throws ExceptionInterface
+     * @throws \Exception
+     */
     public function normalize($entity, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
 

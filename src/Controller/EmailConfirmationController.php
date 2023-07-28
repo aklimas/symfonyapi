@@ -4,8 +4,6 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,12 +20,8 @@ class EmailConfirmationController extends AbstractController
      */
     public function confirm(Request $request): Response
     {
-        $token = $request->query->get('token');
-
         try {
-            $headers = new \stdClass();
-            // TODO wyciągnąć klucz do ENV
-            $decodedToken = JWT::decode($token, new Key('12345', 'HS256'), $headers);
+            $decodedToken = JWTKey::decode($request->query->get('token'));
         } catch (\Exception $e) {
             return new Response('Email confirmed failed', 404);
         }

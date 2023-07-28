@@ -23,7 +23,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
     types: ['https://schema.org/MediaObject'],
     operations: [
         new Get(),
-        //new GetCollection(),
+        // new GetCollection(),
         new Post(
             controller: CreateMediaObjectAction::class,
             openapi: new Model\Operation(
@@ -61,9 +61,9 @@ class MediaObject
     #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePath')]
     #[Assert\NotNull(groups: ['media_object_create'])]
     #[Assert\File(
-        maxSize: "2048k",
-        mimeTypes: ["image/jpg", "image/jpeg", "image/png"],
-        mimeTypesMessage: "Please upload a valid image [JPG/PNG]"
+        maxSize: '2048k',
+        mimeTypes: ['image/jpg', 'image/jpeg', 'image/png'],
+        mimeTypesMessage: 'Please upload a valid image [JPG/PNG]'
     )]
     public ?File $file = null;
     #[ORM\Column(nullable: true)]
